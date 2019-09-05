@@ -5,9 +5,9 @@ export const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 50,
+      required: false,
+      minlength: 1,
+      maxlength: 255,
     },
     email: {
       type: String,
@@ -18,17 +18,22 @@ export const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: false,
-      minlength: 5,
-      maxlength: 1024,
+      required: true,
+      minlength: 1,
+      maxlength: 255,
     },
-    roleId: [
+    isActive: {
+      type: Boolean,
+      required: true,
+      default: true
+    },
+    roles: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Role',
-        required: true,
-      },
-    ],
+        required: false,
+      }
+    ]
   },
   { timestamps: true },
 );

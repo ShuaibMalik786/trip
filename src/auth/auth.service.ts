@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { UserService } from '../user/service/user.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -13,22 +13,23 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     @InjectModel('User') private readonly userModel: Model,
-  ) {}
+  ) { }
 
-  async login(user, @Res() res: Response): Promise<any> {
-    try {
-      let temp = await this.userModel
-        .findOne({ email: user.email, password: user.password })
-        .select('-password')
-        .populate('roleId');
-      if (!temp || temp.length == 0) {
-        res.status(404).send({ error: 'Invalid email or password' });
-      }
-      temp = this.genrateToken(temp);
-      res.status(200).send(temp);
-    } catch (err) {
-      this.handleError(err, res);
+  async login(user) {
+    // try {
+    let temp = await this.userModel
+      .findOne({ email: user.email, password: user.password })
+      .select('-password')
+      .populate('roles');
+    console.log(user.email);
+    if (!temp || temp.length == 0) {
+      throw new HttpException(
+        'Invalid email or password',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+    temp = this.genrateToken(temp);
+    return temp;
   }
 
   // handel error
@@ -43,7 +44,7 @@ export class AuthService {
     } else {
       res.status(400).send(error);
     }
-  } 
+  }
 
   genrateToken(user) {
     const payload = { email: user.email, sub: user._id };
